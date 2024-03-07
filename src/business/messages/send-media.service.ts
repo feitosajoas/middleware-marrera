@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { catchError, lastValueFrom, map } from 'rxjs';
+import { Injectable } from '@nestjs/common';
+import { lastValueFrom, map } from 'rxjs';
 
 @Injectable()
 export class SendMediaService {
@@ -13,26 +13,12 @@ export class SendMediaService {
 
   constructor(private readonly http: HttpService) {}
 
+  //TODO: Verificar melhor tipagens
   async sendMedia(instanceToken: string, payload: any) {
-    const request = this.http
-      .get(`${this.URL_API}/instance/fetchInstances`, this.config)
-      .pipe(map((res) => res.data))
-      .pipe(
-        catchError(() => {
-          throw new ForbiddenException('API not available');
-        }),
-      );
-
-    const instances = await lastValueFrom(request);
-    const res = instances.find((element) => {
-      return element.instance.instanceId === instanceToken;
-    });
-
-    console.log(res.instance);
-    // console.log(res.instance.apikey, res.instance.instanceName);
+    // console.log(res.instance);
     const configPost = {
       headers: {
-        apikey: res.instance.apikey,
+        apikey: instanceToken,
       },
     };
 
@@ -41,7 +27,7 @@ export class SendMediaService {
     return await lastValueFrom(
       this.http
         .post(
-          `${this.URL_API}/message/sendMedia/${res.instance.instanceName}`,
+          `${this.URL_API}/message/sendMedia/${instanceToken}`,
           payload,
           configPost,
         )
